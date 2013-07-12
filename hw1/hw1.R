@@ -11,7 +11,10 @@ library(ggplot2)
 library(taRifx)
 
 #load in data
-auto <- read.csv("/Users/kperko/work/data-science-class/hw1/dataset/imports-85.data", header=F)
+#setwd in R to github hw1 folder
+setwd("/Users/kperko/work/data-science-class/GADataScience/hw1/")
+auto <- read.csv("imports-85.data", header=F)
+
 
 #get structure that R imposed
 str(auto)
