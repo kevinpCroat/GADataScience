@@ -91,8 +91,8 @@ summary(fit.c)
 plot(fit.c)
 
 #ridge regression
-#dont think I did this correctly
-fit.c.r <- lm.ridge(price ~ curb_weight + engine_size, data=auto.s,lambda=seq(0,.1,.001))
-summary(fit.c.r)
+lm.ridge(price ~ curb_weight + engine_size, data=auto.s)
+#exception: Error in svd(X) : infinite or missing values in 'x'
+lm.ridge(price ~ ., data=auto.s)
 
 plot(lm.ridge(price ~ curb_weight + engine_size, data=auto.s,lambda=seq(0,.1,.001)))
