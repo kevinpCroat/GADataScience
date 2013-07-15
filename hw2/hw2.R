@@ -1,6 +1,7 @@
-library(stuff)
+require(class)
+require(ggplot2)
 
-set.seed(12)
+data(iris)
 
 kpknn <- function(train,test,cl,max.k,test.labels){
 	for (k in 1:max.k)
