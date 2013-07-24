@@ -1,7 +1,27 @@
-require(class)
-require(ggplot2)
+#clear workspace
+rm(list = ls())
 
+#load packages
+library(class)
+library(ggplot2)
+
+#dataset
 data(iris)
+
+#find the number of rows
+nrow(iris)
+
+#get the str and summary
+str(iris)
+summary(iris)
+
+#for reproducability
+set.seed(123)
+
+#split for train and test data
+iris.train <- sample(iris,5)
+
+iris.train
 
 kpknn <- function(train,test,cl,max.k,test.labels){
 	for (k in 1:max.k)
