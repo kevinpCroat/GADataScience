@@ -121,7 +121,9 @@ def main():
 	cur = con.cursor()
 	
 	#lets build the date_list using our start_date and the range we want to generate it for
-	date_list = get_date_list(500,[2010,12,31])
+	#already ran for this range
+	#500 api call limit can be exceeded - read docs for RAINDROP(s)
+	date_list = get_date_list(1000,[2010,12,31])
 	
 	for date in date_list:
 		history_api_url = "http://api.wunderground.com/api/%s/history_%s/q/DC/Washington.json" % (API_KEY,date.strftime("%Y%m%d"))
