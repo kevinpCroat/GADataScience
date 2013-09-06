@@ -16,10 +16,11 @@ create table bike_rentals (
 	index(member_type) 
 	);
 	
-	
+
+drop table if exists weather_data;
 create table weather_data (
-	row_id int not null auto_increment,
-	city varchar(200) default 'washington_dc',
+	row_id int not null auto_increment primary key,
+	city varchar(200) default null,
 	icon varchar(200) default null,
 	conds varchar(200) default null,
 	tempi decimal(5,2) default null,
@@ -27,14 +28,15 @@ create table weather_data (
 	hum decimal(5,2) default null,
 	wspdi decimal(5,2) default null,
 	pressurei decimal(5,2) default null,
-	precipi decimal(5,2) default null,
-	pop decimal(5,2) default null,
+	precipi decimal(6,2) default null,
+	-- pop decimal(5,2) default null,
 	fog tinyint(1) default null,
 	rain tinyint(1) default null,
 	hail tinyint(1) default null,
 	thunder tinyint(1) default null,
 	tornado tinyint(1) default null,
 	date_recorded datetime not null,
-	date_created datetime DEFAULT CURRENT TIMESTAMP,
-	date_modified datetime default null,
-	)
+	hour_recorded int not null,
+	date_created datetime DEFAULT CURRENT_TIMESTAMP,
+	date_modified datetime default null
+	);
