@@ -50,69 +50,6 @@ def insert_into_db(cur,con,*args):
 	
 	db.commit()
 	
-def sql_insert(weather_dict):
-
-	BATCH_SIZE = 10000
-	NUM_BATCHES = len(weather_dict)/BATCH_SIZE
-	REST_OF_ROWS = len(weather_dict) % BATCH_SIZE
-	assert NUM_BATCHES*BATCH_SIZE+REST_OF_ROWS == len(result_set)
-
-	for i in range(0, NUM_BATCHES):
-		list_of_tuples = []
-		low = i*BATCH_SIZE
-		high = i*BATCH_SIZE+BATCH_SIZE
-
-		for row in result_set[low:high]:
-			list_of_tuples.append((row['month'], row['event_id'], row['uid'],row['u_created_date'],row['e_created_date'],\
-			row['published'],row['end_date'],row['current_status'],row['password'],row['listed'],\
-			row['locale'],row['currency'],row['referral_code'],row['channels'],row['channels_2'],\
-			MySQLdb.escape_string(row['tags']),row['city'],row['state'],row['country'],row['postal_code'],\
-			row['paid_buyers'],row['free_buyers'],row['paid_tix'],row['free_tix'],row['gts'],\
-			row['gtf'],row['ntf'],row['ebfees'],row['salesrep']))
-
-			SQL = """INSERT INTO fin_events_month \
-	         	(month, event_id, uid,u_created_date,e_created_date,\
-				published,end_date,current_status,password,listed,\
-				locale,currency,referral_code,channels,channels_2,\
-				tags,city,state,country,postal_code,\
-				paid_buyers,free_buyers,paid_tix,free_tix,gts,\
-				gtf,ntf,ebfees,salesrep)
-	         	values (%s,%s,%s,%s,%s,\
-						%s,%s,%s,%s,%s,\
-						%s,%s,%s,%s,%s,\
-						%s,%s,%s,%s,%s,\
-						%s,%s,%s,%s,%s,\
-						%s,%s,%s,%s)"""
-		c_analytics.executemany(SQL, list_of_tuples)
-
-	    #### Now get the remaining rows:
-	list_of_tuples = []
-	for row in result_set[-REST_OF_ROWS:]:
-		list_of_tuples.append((row['month'], row['event_id'], row['uid'],row['u_created_date'],row['e_created_date'],\
-		row['published'],row['end_date'],row['current_status'],row['password'],row['listed'],\
-		row['locale'],row['currency'],row['referral_code'],row['channels'],row['channels_2'],\
-		MySQLdb.escape_string(row['tags']),row['city'],row['state'],row['country'],row['postal_code'],\
-		row['paid_buyers'],row['free_buyers'],row['paid_tix'],row['free_tix'],row['gts'],\
-		row['gtf'],row['ntf'],row['ebfees'],row['salesrep']))
-
-		SQL = """INSERT INTO fin_events_month \
-	     	(month, event_id, uid,u_created_date,e_created_date,\
-			published,end_date,current_status,password,listed,\
-			locale,currency,referral_code,channels,channels_2,\
-			tags,city,state,country,postal_code,\
-			paid_buyers,free_buyers,paid_tix,free_tix,gts,\
-			gtf,ntf,ebfees,salesrep)
-	     	values (%s,%s,%s,%s,%s,\
-					%s,%s,%s,%s,%s,\
-					%s,%s,%s,%s,%s,\
-					%s,%s,%s,%s,%s,\
-					%s,%s,%s,%s,%s,\
-					%s,%s,%s,%s)"""
-
-	c_analytics.executemany(SQL, list_of_tuples)
-	#commit the changes to the db
-	db_analytics.commit()
-	
 def insert_data(con,cur,dict_w):
 	qry = """ INSERT INTO weather_data (city,icon,conds,tempi,dewpti,hum,wspdi,pressurei,precipi,fog,rain,hail,thunder,
 	tornado,date_recorded,hour_recorded)
