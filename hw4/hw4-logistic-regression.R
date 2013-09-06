@@ -4,12 +4,13 @@ library(taRifx)
 #fertility data set
 #http://archive.ics.uci.edu/ml/machine-learning-databases/00244/fertility_Diagnosis.txt
 
-#N is Normal and O is altered
+#set the seed for reproducible results
+set.seed(2)
 
 #use several independent vars
-
+#colClasses=c('factor','factor','factor','factor','factor','factor','factor','factor','factor','factor')
 #get a data set
-fertility <- read.table('http://archive.ics.uci.edu/ml/machine-learning-databases/00244/fertility_Diagnosis.txt',sep=",",header=F, colClasses=c('factor','factor','factor','factor','factor','factor','factor','factor','factor','factor'))
+fertility <- read.table('http://archive.ics.uci.edu/ml/machine-learning-databases/00244/fertility_Diagnosis.txt',sep=",",header=F)
 
 #preserve a copy
 fertile <- fertility
@@ -27,7 +28,7 @@ str(fertility)
 #also the factors are 1 and 2 - needs to be 0,1
 
 #it works
-fertility$diagnosis <- ifelse(fertility$diagnosis=="N",1,0)
+fertility$diagnosis <- ifelse(fertility$diagnosis=="N",0,1)
 
 #fix data types - we have lots of categorical vars represented as numbers
 fertility$season <- factor(fertility$season)
@@ -43,10 +44,17 @@ fertility$hours_sitting_per_day <- factor(fertility$hours_sitting_per_day)
 #linear fit
 lin.fit <- lm(diagnosis ~ ., data=fertility)
 
+lin2.fit <- lm(diagnosis ~ 0, data=fertility)
+
 logit.fit <- glm(diagnosis ~., family='binomial', data=fertility)
 
+summary(lm(diagnosis ~ accident_trauma + high_fevers, data=fertility))
+glm(diagnosis ~ 0 + accident_trauma, family='binomial', data=fertility)
+
 #summary of coefficients and statistical significance
-summary(lin.fit)
+summary(step(lin.fit))
+
+summary(logit.fit)
 
 #n-fold cv framework
 #setting the seed
