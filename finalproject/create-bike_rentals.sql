@@ -16,6 +16,8 @@ create table bike_rentals (
 -- Add INDEXES AFTER INSERT
 ALTER TABLE bike_rentals add index (trip_duration,start_date,end_date,start_station,start_terminal,end_station,end_terminal,bike_num,member_type);
 ALTER TABLE bike_rentals add index (start_date);
+-- add column for recording trip_duration in seconds
+alter table bike_rentals add column trip_duration_seconds int(10) unsigned after trip_duration;
 
 drop table if exists weather_data;
 create table weather_data (

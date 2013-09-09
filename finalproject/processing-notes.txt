@@ -1,0 +1,37 @@
+#next steps
+#munge the data
+#check with csv to make sure data didnt get messed up on insert
+#if valid
+#1 we have 30k rows with invalid trip duration values
+#calculate trip duration using start_date and end_date
+#OR OR
+#convert existing trip duration values into a integer represented by seconds
+#this will make your life easier for modeling
+
+#GREP the files and pass the grep output to wc -l to find the number of occurrences
+#if it matches its just the dirty fucking data
+#somewhere along the line it got whack
+#what to do about trip duration values that dont align with start_date and end_date values?
+#can we just get ride of this data? 30k rows.
+
+#examined the data. looks out. trip duration seems to be the most accurate field.
+#start date and end date are not recorded accurately for trips <1 m
+
+For 0h 0m 0s 144 records in csv vs 130 in db. comparable. 
+
+9h 9min. 24sec.
+9h 9m 52s 
+9h 9m 53sec. 
+9h 58m 40sec.
+
+find the h
+slice before h, but after the space
+find the m
+slice befor the m, but after the spce
+find the s
+slice before the s. but after the space
+
+-- no trips meet this condition of having a trip length >1m
+select substr(trip_duration,4,1),trip_duration,row_id,start_date,start_terminal,end_terminal from bike_rentals where start_date=end_date and substr(trip_duration,4,1)>0 and trip_duration!="0h 0m 0s" order by year(start_date),month(start_date);
+
+select trip_duration,length(trip_duration) from bike_rentals group by length(trip_duration);
