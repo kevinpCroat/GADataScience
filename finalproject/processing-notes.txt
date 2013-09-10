@@ -14,24 +14,41 @@
 #what to do about trip duration values that dont align with start_date and end_date values?
 #can we just get ride of this data? 30k rows.
 
-#examined the data. looks out. trip duration seems to be the most accurate field.
-#start date and end date are not recorded accurately for trips <1 m
+#examined the data. looks good. trip duration seems to be the most accurate field.
+#start date and end date are not recorded at the second level
+so trips under 1m don't register
 
-For 0h 0m 0s 144 records in csv vs 130 in db. comparable. 
-
-9h 9min. 24sec.
-9h 9m 52s 
-9h 9m 53sec. 
-9h 58m 40sec.
-
-find the h
-slice before h, but after the space
-find the m
-slice befor the m, but after the spce
-find the s
-slice before the s. but after the space
+For 0h 0m 0s there are 144 records in csv provided by capital bikeshare vs 130 in db. Acceptable.
 
 -- no trips meet this condition of having a trip length >1m
 select substr(trip_duration,4,1),trip_duration,row_id,start_date,start_terminal,end_terminal from bike_rentals where start_date=end_date and substr(trip_duration,4,1)>0 and trip_duration!="0h 0m 0s" order by year(start_date),month(start_date);
 
+-- get a distinct count of all the different ways of formatting trip_duration
 select trip_duration,length(trip_duration) from bike_rentals group by length(trip_duration);
+
+#process
+#get the data from wunderground and capital bikeshare
+#
+
+#set up the virtual environment which has numerical libraries installed
+#I did it the hard way (gcc compiler, numpy, pylab, scipy, etc)
+#but if you go with an anacondo distro its all packaged nicely. highly recommended. 
+source /Users/kperko/work/data-science-class/venv/bin/activate
+
+to get pytables working:
+pip install numexpr
+sudo pip install git+https://github.com/PyTables/PyTables.git@v.3.0.0#egg=tables
+sudo pip install Cython
+#install hdf5
+http://www.underworldproject.org/downloads.html
+unix build instructions:
+http://www.underworldproject.org/documentation/HDF5Download.html
+
+#account for time series
+#plot the data
+
+-- number of rentals by month in time
+select count(*) as rentals,year(start_date),month(start_date) from bike_rentals group by year(start_date),month(start_date);
+
+
+
