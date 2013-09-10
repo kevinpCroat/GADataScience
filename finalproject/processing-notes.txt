@@ -16,7 +16,7 @@
 
 #examined the data. looks good. trip duration seems to be the most accurate field.
 #start date and end date are not recorded at the second level
-so trips under 1m don't register
+so trips under 1m dont register
 
 For 0h 0m 0s there are 144 records in csv provided by capital bikeshare vs 130 in db. Acceptable.
 
@@ -50,5 +50,56 @@ http://www.underworldproject.org/documentation/HDF5Download.html
 -- number of rentals by month in time
 select count(*) as rentals,year(start_date),month(start_date) from bike_rentals group by year(start_date),month(start_date);
 
+#rentals per hour
+select count(*) as trips,hour(start_date),sum(trip_duration_seconds)/count(*) as avg_trip_length_seconds from bike_rentals group by hour(start_date);
 
+#summary table
+create table bike_summary
+select count(*) as trips,hour(start_date) as trip_hour,date(start_date) as trip_date,
+avg(trip_duration_seconds) as avg_trip_duration,sum(trip_duration_seconds)/count(*) as avg_trip_length_seconds
+from bike_rentals 
+group by hour(start_date),date(start_date);
+
+alter table bike summary add index(trip_hour,trip_date);
+
+#weather data by hour
+select tempi,hum,date(date_recorded),hour_recorded from weather_data r_date group by hour_recorded,date(date_recorded);
+
+#join
+select count(br.row_id) as trips,tempi,hum,date(date_recorded),hour_recorded from weather_data wd join bike_rentals br on (hour(br.start_date)=wd.hour_recorded and date(br.start_date)=date(wd.date_recorded)) limit 10;
+
+#join
+select count(br.row_id) as trips,tempi,hum,date(date_recorded),hour_recorded from weather_data wd join bike_rentals br on (hour(br.start_date)=wd.hour_recorded and date(br.start_date)=date(wd.date_recorded))
+where date(wd.date_recorded)='2013-03-01' limit 10;
+
+#interesting
+select * from bike_summary where trips > 100 order by trips,avg_trip_duration desc limit 20;
+
+#join w/ summary table
+select trips,tempi,hum,date(date_recorded) as date_trip_wthr,hour_recorded
+from weather_data wd
+join bike_summary bs on (trip_hour=hour_recorded and date(trip_date)=date(date_recorded))
+where date(wd.date_recorded)='2013-03-01' limit 10;
+
+#join w/ summary table
+select trips,tempi,hum,date(date_recorded) as date_trip_wthr,hour_recorded
+from weather_data wd
+join bike_summary bs on (trip_hour=hour_recorded and date(trip_date)=date(date_recorded))
+order by trips,tempi;
+
+#interesting
+select * from bike_summary 
+select trips,tempi,hum,date(date_recorded) as date_trip_wthr,hour_recorded
+from weather_data wd
+join bike_summary bs on (trip_hour=hour_recorded and date(trip_date)=date(date_recorded))
+ limit 10;
+
+#establish patterns
+#seasonality
+#hourly patterns
+#weekday/weekend patterns
+
+#set some sort of baseline
+#trips grow every month by x
+#so accounting for this - impact of weather
 
