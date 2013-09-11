@@ -53,16 +53,16 @@ select count(*) as rentals,year(start_date),month(start_date) from bike_rentals 
 #rentals per hour
 select count(*) as trips,hour(start_date),sum(trip_duration_seconds)/count(*) as avg_trip_length_seconds from bike_rentals group by hour(start_date);
 
-#summary table
-```
-create table bike_summary
-select count(*) as trips,hour(start_date) as trip_hour,date(start_date) as trip_date,
-avg(trip_duration_seconds) as avg_trip_duration,sum(trip_duration_seconds)/count(*) as avg_trip_length_seconds
-from bike_rentals 
-group by hour(start_date),date(start_date);
+	#summary table
 
-alter table bike summary add index(trip_hour,trip_date);
-```
+	create table bike_summary
+	select count(*) as trips,hour(start_date) as trip_hour,date(start_date) as trip_date,
+	avg(trip_duration_seconds) as avg_trip_duration,sum(trip_duration_seconds)/count(*) as avg_trip_length_seconds
+	from bike_rentals 
+	group by hour(start_date),date(start_date);
+
+	-- add index for columns
+	alter table bike summary add index(trip_hour,trip_date);
 
 #weather data by hour
 select tempi,hum,date(date_recorded),hour_recorded from weather_data r_date group by hour_recorded,date(date_recorded);
