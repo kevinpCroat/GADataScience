@@ -66,32 +66,32 @@ select count(*) as trips,hour(start_date),sum(trip_duration_seconds)/count(*) as
 	-- add index for columns
 	alter table bike summary add index(trip_hour,trip_date);
 
-#weather data by hour
+##weather data by hour
 select tempi,hum,date(date_recorded),hour_recorded from weather_data r_date group by hour_recorded,date(date_recorded);
 
-#join
+##join
 select count(br.row_id) as trips,tempi,hum,date(date_recorded),hour_recorded from weather_data wd join bike_rentals br on (hour(br.start_date)=wd.hour_recorded and date(br.start_date)=date(wd.date_recorded)) limit 10;
 
-#join
+##join
 select count(br.row_id) as trips,tempi,hum,date(date_recorded),hour_recorded from weather_data wd join bike_rentals br on (hour(br.start_date)=wd.hour_recorded and date(br.start_date)=date(wd.date_recorded))
 where date(wd.date_recorded)='2013-03-01' limit 10;
 
-#interesting
+##interesting
 select * from bike_summary where trips > 100 order by trips,avg_trip_duration desc limit 20;
 
-#join w/ summary table
+##join w/ summary table
 select trips,tempi,hum,date(date_recorded) as date_trip_wthr,hour_recorded
 from weather_data wd
 join bike_summary bs on (trip_hour=hour_recorded and date(trip_date)=date(date_recorded))
 where date(wd.date_recorded)='2013-03-01' limit 10;
 
-#join w/ summary table
+##join w/ summary table
 select trips,tempi,hum,date(date_recorded) as date_trip_wthr,hour_recorded
 from weather_data wd
 join bike_summary bs on (trip_hour=hour_recorded and date(trip_date)=date(date_recorded))
 order by trips,tempi;
 
-#interesting
+##interesting
 select * from bike_summary 
 select trips,tempi,hum,date(date_recorded) as date_trip_wthr,hour_recorded
 from weather_data wd
@@ -108,10 +108,12 @@ Break out the components:
 Could these be pushed into a PCA? That way, weather becomes a single real number, that indicates
 how ideal the conditions are for biking (imho) on any given day.
 
-#get the min and max data and how often weather types occur
+#Weather Data Analysis
+##Frequency and Analysis
+
+
 	mysql> select min(tempi) as min_temp,max(tempi) as max_temp,avg(tempi) as avg_temp,min(hum) as min_hum,
 	max(hum) as max_hum,avg(hum) as avg_hum, min(precipi) as min_precip,max(precipi) as max_precip from weather_data;
-	
 	
 	+----------+----------+-----------+---------+---------+-----------+------------+------------+
 	| min_temp | max_temp | avg_temp  | min_hum | max_hum | avg_hum   | min_precip | max_precip |
@@ -120,31 +122,41 @@ how ideal the conditions are for biking (imho) on any given day.
 	+----------+----------+-----------+---------+---------+-----------+------------+------------+
 
 
-We left out fog,rain,hail,thunder and tornado!
-They are binary values so they are between 0 and 1. Let's count them to see how often they occcur,
-and if we have any unwanted values like you know -9999 :).
-
-	mysql> select count(*),fog,rain,hail,thunder,tornado from weather_data group by fog,rain,hail,thunder,tornado;
-	
-	
-	+----------+------+------+------+---------+---------+
-	| count(*) | fog  | rain | hail | thunder | tornado |
-	+----------+------+------+------+---------+---------+
-	|    24867 |    0 |    0 |    0 |       0 |       0 |
-	|      143 |    0 |    0 |    0 |       1 |       0 |
-	|     3290 |    0 |    1 |    0 |       0 |       0 |
-	|      510 |    0 |    1 |    0 |       1 |       0 |
-	|        1 |    0 |    1 |    1 |       0 |       0 |
-	|        4 |    0 |    1 |    1 |       1 |       0 |
-	|      181 |    1 |    0 |    0 |       0 |       0 |
-	|       11 |    1 |    1 |    0 |       0 |       0 |
-	|        9 |    1 |    1 |    0 |       1 |       0 |
-	+----------+------+------+------+---------+---------+
-
-
 What does this tell us? 
 First, we have a wide amount of variance in all of our metrics and we need to clean the precipi field
 so that the min is 0, not -9999.00.
+
+We left out fog,rain,hail,thunder and tornado!
+They are binary values which means they are between 0 and 1. Let's count them to see how often they occur,
+and if we have any unwanted values like you know -9999 :).
+
+	mysql> select count(*),round(count(*)/(select count(*) from weather_data),2) as pct_frequency,fog,rain,hail,thunder,tornado
+	 from weather_data group by fog,rain,hail,thunder,tornado order by count(*);
+
+	+----------+---------------+------+------+------+---------+---------+
+	| count(*) | pct_frequency | fog  | rain | hail | thunder | tornado |
+	+----------+---------------+------+------+------+---------+---------+
+	|        1 |          0.00 |    0 |    1 |    1 |       0 |       0 |
+	|        4 |          0.00 |    0 |    1 |    1 |       1 |       0 |
+	|        9 |          0.00 |    1 |    1 |    0 |       1 |       0 |
+	|       11 |          0.00 |    1 |    1 |    0 |       0 |       0 |
+	|      143 |          0.00 |    0 |    0 |    0 |       1 |       0 |
+	|      181 |          0.01 |    1 |    0 |    0 |       0 |       0 |
+	|      510 |          0.02 |    0 |    1 |    0 |       1 |       0 |
+	|     3290 |          0.11 |    0 |    1 |    0 |       0 |       0 |
+	|    24867 |          0.86 |    0 |    0 |    0 |       0 |       0 |
+	+----------+---------------+------+------+------+---------+---------+
+
+
+This tells us that the weather is mostly decent in WDC, but oddly enough,
+rain, hail and thunder occur more frequently than just rain and hail. Add
+in fog and you double the number of occurrences from 4 to 9. 
+
+The most interesting weather types to look at here are rain and rain+thunder
+because they occur frequently enough that we have a chance at measuring their impact.
+It also tells me that, if weather is indeed important to the decision to rent a bike,
+we should see significant differences in bike rentals on a Tuesday at 5pm when it's not raining,
+versus a Tuesday at 5pm when it is raining, assuming similar conditions. 
 
 
 
