@@ -98,6 +98,24 @@ from weather_data wd
 join bike_summary bs on (trip_hour=hour_recorded and date(trip_date)=date(date_recorded))
  limit 10;
 
+#how to define "weather"
+What constitutes good weather? 
+Break out the components:
+  temperature
+  conditions (humidity,rain,clouds,wind,fog)
+  severe conditions (thunders,rain,hail)
+
+Could these be pushed into a PCA? That way, weather becomes a single real number, that indicates
+how ideal the conditions are for biking (imho) on any given day.
+
+#get the min and max data and how often weather types occur
+mysql> select min(tempi) as min_temp,max(tempi) as max_temp,avg(tempi) as avg_temp,min(hum) as min_hum,max(hum) as max_hum,avg(hum) as avg_hum, min(precipi) as min_precip,max(precipi) as max_precip from weather_data;
++----------+----------+-----------+---------+---------+-----------+------------+------------+
+| min_temp | max_temp | avg_temp  | min_hum | max_hum | avg_hum   | min_precip | max_precip |
++----------+----------+-----------+---------+---------+-----------+------------+------------+
+|    16.00 |   105.10 | 60.232613 |    9.00 |  100.00 | 66.558899 |   -9999.00 |       1.33 |
++----------+----------+-----------+---------+---------+-----------+------------+------------+
+
 #final approach
 establish patterns
 seasonality
