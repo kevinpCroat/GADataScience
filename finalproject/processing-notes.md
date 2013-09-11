@@ -109,7 +109,8 @@ Could these be pushed into a PCA? That way, weather becomes a single real number
 how ideal the conditions are for biking (imho) on any given day.
 
 #get the min and max data and how often weather types occur
-	mysql> select min(tempi) as min_temp,max(tempi) as max_temp,avg(tempi) as avg_temp,min(hum) as min_hum,max(hum) as max_hum,avg(hum) as avg_hum, min(precipi) as min_precip,max(precipi) as max_precip from weather_data;
+	mysql> select min(tempi) as min_temp,max(tempi) as max_temp,avg(tempi) as avg_temp,min(hum) as min_hum,
+	max(hum) as max_hum,avg(hum) as avg_hum, min(precipi) as min_precip,max(precipi) as max_precip from weather_data;
 	
 	
 	+----------+----------+-----------+---------+---------+-----------+------------+------------+
@@ -117,6 +118,35 @@ how ideal the conditions are for biking (imho) on any given day.
 	+----------+----------+-----------+---------+---------+-----------+------------+------------+
 	|    16.00 |   105.10 | 60.232613 |    9.00 |  100.00 | 66.558899 |   -9999.00 |       1.33 |
 	+----------+----------+-----------+---------+---------+-----------+------------+------------+
+
+
+We left out fog,rain,hail,thunder and tornado!
+They are binary values so they are between 0 and 1. Let's count them to see how often they occcur,
+and if we have any unwanted values like you know -9999 :).
+
+	mysql> select count(*),fog,rain,hail,thunder,tornado from weather_data group by fog,rain,hail,thunder,tornado;
+	
+	
+	+----------+------+------+------+---------+---------+
+	| count(*) | fog  | rain | hail | thunder | tornado |
+	+----------+------+------+------+---------+---------+
+	|    24867 |    0 |    0 |    0 |       0 |       0 |
+	|      143 |    0 |    0 |    0 |       1 |       0 |
+	|     3290 |    0 |    1 |    0 |       0 |       0 |
+	|      510 |    0 |    1 |    0 |       1 |       0 |
+	|        1 |    0 |    1 |    1 |       0 |       0 |
+	|        4 |    0 |    1 |    1 |       1 |       0 |
+	|      181 |    1 |    0 |    0 |       0 |       0 |
+	|       11 |    1 |    1 |    0 |       0 |       0 |
+	|        9 |    1 |    1 |    0 |       1 |       0 |
+	+----------+------+------+------+---------+---------+
+
+
+What does this tell us? 
+First, we have a wide amount of variance in all of our metrics and we need to clean the precipi field
+so that the min is 0, not -9999.00.
+
+
 
 #final approach
 establish patterns
