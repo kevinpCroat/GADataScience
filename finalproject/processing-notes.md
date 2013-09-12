@@ -131,9 +131,38 @@ What does this tell us?
 First, we have a wide amount of variance in all of our metrics and we need to clean the precipi field
 so that the min is 0, not -9999.00.
 
-We left out fog,rain,hail,thunder and tornado!
-They are binary values which means they are between 0 and 1. Let's count them to see how often they occur,
-and if we have any unwanted values like you know -9999 :).
+####Data Cleaning
+Determine the number of rows to clean:
+
+	mysql> select count(*),precipi from weather_data group by precipi order by count(*) desc limit 5;
+	+----------+---------+
+	| count(*) | precipi |
+	+----------+---------+
+	|      467 |    0.02 |
+	|      899 |    0.01 |
+	|     3038 |    0.00 |
+	|    22756 |-9999.00 |
+	+----------+---------+
+
+We can read the data dictionary, but for us, its either raining or it's not, so we can move this value to 0. 
+
+	mysql> update weather_data set precipi = 0.00 where precipi=-9999.00;
+	Query OK, 22756 rows affected (0.23 sec)
+	Rows matched: 22756  Changed: 22756  Warnings: 0
+	
+	select min(tempi) as min_temp,max(tempi) as max_temp,avg(tempi) as avg_temp,min(hum) as min_hum, max(hum) as max_hum,avg(hum) as avg_hum, min(precipi) as min_precip,max(precipi) as max_precip,avg(precipi) as avg_precipi from weather_data;
+	+----------+----------+-----------+---------+---------+-----------+------------+------------+-------------+
+	| min_temp | max_temp | avg_temp  | min_hum | max_hum | avg_hum   | min_precip | max_precip | avg_precipi |
+	+----------+----------+-----------+---------+---------+-----------+------------+------------+-------------+
+	|    16.00 |   105.10 | 60.232613 |    9.00 |  100.00 | 66.558899 |       0.00 |       1.33 |    0.009175 |
+	+----------+----------+-----------+---------+---------+-----------+------------+------------+-------------+
+
+That's better!
+
+Wait, we left out fog,rain,hail,thunder and tornado!
+
+They are binary values, which means they are between 0 and 1. Let's count them to see how often they occur,
+and if we have any unwanted values, like -9999 :).
 
 	mysql> select count(*),round(count(*)/(select count(*) from weather_data),2) as pct_frequency,fog,rain,hail,thunder,tornado
 	 from weather_data group by fog,rain,hail,thunder,tornado order by count(*);
@@ -209,6 +238,21 @@ If we look at the percentage of weather patterns within each month we expose tre
 	from weather_data
 	group by month(date_recorded);
 
+We're making progress understanding our weather patterns, but what would be excellent is the ability
+to have a single real number, normalized from 0 to 1, that represents the idea of weather.
+
+###Let's get some domain expertise:
+http://www.shorstmeyer.com/wxfaqs/humidity/humidity.html
+
+####tl;dr Dew point is a better measure of whether or not the air feels sticky than humidity is.
+
+	select min(tempi) as min_temp,max(tempi) as max_temp,avg(tempi) as avg_temp,min(hum) as min_hum, max(hum) as max_hum,avg(hum) as avg_hum, min(precipi) as min_precip,max(precipi) as max_precip,avg(precipi) as avg_precipi,min(dewpti) min_dewpt,max(dewpti) max_dewpt,avg(dewpti) avg_dewpt from weather_data;
+	
+	+----------+----------+-----------+---------+---------+-----------+------------+------------+-------------+-----------+-----------+-----------+
+	| min_temp | max_temp | avg_temp  | min_hum | max_hum | avg_hum   | min_precip | max_precip | avg_precipi | min_dewpt | max_dewpt | avg_dewpt |
+	+----------+----------+-----------+---------+---------+-----------+------------+------------+-------------+-----------+-----------+-----------+
+	|    16.00 |   105.10 | 60.232613 |    9.00 |  100.00 | 66.558899 |       0.00 |       1.33 |    0.009175 |     -8.00 |     81.00 | 47.759564 |
+	+----------+----------+-----------+---------+---------+-----------+------------+------------+-------------+-----------+-----------+-----------+
 
 #final approach
 establish patterns
