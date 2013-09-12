@@ -246,6 +246,20 @@ http://www.shorstmeyer.com/wxfaqs/humidity/humidity.html
 
 ####tl;dr Dew point is a better measure of whether or not the air feels sticky than humidity is.
 
+	Dew Point  						                     Relative Humidity
+	Temp. °F	       Human Perception	                   Air Temp 90°F	
+	 ---------------------------------------------------------------                          
+	75°+	      |   Extremely uncomfortable, oppressive  |  62%
+	70° - 74°	  |   Very Humid, quite uncomfortable	   |  52% - 60%
+	65° - 69°	  |   Somewhat uncomfortable          	   |  44% - 52%
+	60° - 64°	  |   OK for most	                       |  37% - 46%
+	55° - 59°	  |   Comfortable	                       |  31% - 41%
+	50° - 54°	  |   Very comfortable	                   |  31% - 37%
+	49° or lower  |	  Western US a bit dry to some	       |  30%
+
+
+Including dewpoint:
+
 	select min(tempi) as min_temp,max(tempi) as max_temp,avg(tempi) as avg_temp,min(hum) as min_hum, max(hum) as max_hum,avg(hum) as avg_hum, min(precipi) as min_precip,max(precipi) as max_precip,avg(precipi) as avg_precipi,min(dewpti) min_dewpt,max(dewpti) max_dewpt,avg(dewpti) avg_dewpt from weather_data;
 	
 	+----------+----------+-----------+---------+---------+-----------+------------+------------+-------------+-----------+-----------+-----------+
@@ -253,6 +267,20 @@ http://www.shorstmeyer.com/wxfaqs/humidity/humidity.html
 	+----------+----------+-----------+---------+---------+-----------+------------+------------+-------------+-----------+-----------+-----------+
 	|    16.00 |   105.10 | 60.232613 |    9.00 |  100.00 | 66.558899 |       0.00 |       1.33 |    0.009175 |     -8.00 |     81.00 | 47.759564 |
 	+----------+----------+-----------+---------+---------+-----------+------------+------------+-------------+-----------+-----------+-----------+
+
+
+We need to create a temp table that lets us join weather and number of bike trips per hour,
+since the assumption is that weather can explain at least some the variance in bike trips.
+Additionally, I would expect that time of day, weekend/weekday/holiday will also have an impact
+that we will need to control for. 
+
+To control for these variables we'll include them in the regression model so that their covariates
+are part of the model. We also want to say that Winter is not the same as summer and may build
+different models to explain different seasons.
+
+In reality there are certainly variables that I'm not controlling for, called residual confounding,
+but this approach should be solid enough. 
+
 
 #final approach
 establish patterns
