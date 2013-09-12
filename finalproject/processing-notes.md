@@ -1,8 +1,6 @@
-#h1
-##h2
-###h3
-####h4
-#####h5
+#Final Project
+## Weather Data Analysis on Bike Sharing Patterns in Washington DC
+### by Kevin Perko
 
 
 #next steps:
@@ -165,6 +163,51 @@ It also tells me that, if weather is indeed important to the decision to rent a 
 we should see significant differences in bike rentals on a Tuesday at 5pm when it's not raining,
 versus a Tuesday at 5pm when it is raining, assuming similar conditions. 
 
+###Temperature Frequency Distribution
+
+Let's bucketize the weather based on its distrubtion:
+	
+	#Distribution of temps by freqncy
+	select count(*),tempi from weather_data group by(tempi);
+
+	mysql> select 
+	sum(if(tempi>10 and tempi<=30,1,0)) as bucket_30, 'count' as measure,
+	sum(if(tempi>30 and tempi<=50,1,0)) as bucket_50,'count' as measure,
+	sum(if(tempi>50 and tempi<=70,1,0)) as bucket_70,'count' as measure,
+	sum(if(tempi>70 and tempi<=90,1,0)) as bucket_90,'count' as measure,
+	sum(if(tempi>90 and tempi<=100,1,0)) as bucket_110,'count' as measure
+	from weather_data
+	UNION ALL
+	select
+	round(sum(if(tempi>10 and tempi<=30,1,0))/(select count(*) from weather_data),2) as bucket_30_pct,'pct' as measure,
+	round(sum(if(tempi>30 and tempi<=50,1,0))/(select count(*) from weather_data),2) as bucket_50_pct,'pct' as measure,
+	round(sum(if(tempi>50 and tempi<=70,1,0))/(select count(*) from weather_data),2) as bucket_70_pct,'pct' as measure,
+	round(sum(if(tempi>70 and tempi<=90,1,0))/(select count(*) from weather_data),2) as bucket_90_pct,'pct' as measure,
+	round(sum(if(tempi>90 and tempi<=100,1,0))/(select count(*) from weather_data),2) as bucket_110_pct,'pct' as measure
+	from weather_data;
+	
+	+-----------+---------+-----------+---------+-----------+---------+-----------+---------+------------+---------+
+	| bucket_30 | measure | bucket_50 | measure | bucket_70 | measure | bucket_90 | measure | bucket_110 | measure |
+	+-----------+---------+-----------+---------+-----------+---------+-----------+---------+------------+---------+
+	|    783.00 | count   |   9013.00 | count   |   9186.00 | count   |   9414.00 | count   |     590.00 | count   |
+	|      0.03 | pct     |      0.31 | pct     |      0.32 | pct     |      0.32 | pct     |       0.02 | pct     |
+	+-----------+---------+-----------+---------+-----------+---------+-----------+---------+------------+---------+
+
+
+Here we can see that 93% of the weather occurs between 30 and 90 degrees F in Washington, DC. 
+
+
+If we look at the percentage of weather patterns within each month we expose trends weather seasonality.
+
+	mysql> select
+	month(date_recorded),
+	round(sum(if(tempi>10 and tempi<=30,1,0))/count(*),2) as bucket_30_pct,
+	round(sum(if(tempi>30 and tempi<=50,1,0))/count(*),2) as bucket_50_pct,
+	round(sum(if(tempi>50 and tempi<=70,1,0))/count(*),2) as bucket_70_pct,
+	round(sum(if(tempi>70 and tempi<=90,1,0))/count(*),2) as bucket_90_pct,
+	round(sum(if(tempi>90 and tempi<=100,1,0))/count(*),2) as bucket_110_pct
+	from weather_data
+	group by month(date_recorded);
 
 
 #final approach
