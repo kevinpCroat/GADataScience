@@ -1,9 +1,13 @@
 #Final Project
-## Weather Data Analysis on Bike Sharing Patterns in Washington DC
-### by Kevin Perko
+### Weather Data Analysis on Bike Sharing Patterns in Washington DC
+#### by Kevin Perko
 
+####Approach:
 
-#next steps:
+1. Acquire the data
+-- 
+
+##next steps:
 munge the data
 check with csv to make sure data didnt get messed up on insert
 if valid
@@ -19,7 +23,7 @@ somewhere along the line it got whack
 at to do about trip duration values that dont align with start_date and end_date values?
 can we just get ride of this data? 30k rows.
 
-#data quality
+##data quality
 
 examined the data. looks good. trip duration seems to be the most accurate field.
 start date and end date are not recorded at the second level
@@ -33,33 +37,24 @@ select substr(trip_duration,4,1),trip_duration,row_id,start_date,start_terminal,
 -- get a distinct count of all the different ways of formatting trip_duration
 select trip_duration,length(trip_duration) from bike_rentals group by length(trip_duration);
 
-#process
+##process
 1. get the data from wunderground and capital bikeshare
 2. set up the virtual environment which has numerical libraries installed
 	2a. I did it the hard way (gcc compiler, numpy, pylab, scipy, etc) but if you go with an anacondo distro its all packaged nicely. highly recommended. 
 3. source /Users/kperko/work/data-science-class/venv/bin/activate
 
-#pytables
-to get pytables working:
-pip install numexpr
-sudo pip install git+https://github.com/PyTables/PyTables.git@v.3.0.0#egg=tables
-sudo pip install Cython
 
-#install hdf5
-http://www.underworldproject.org/downloads.html
-unix build instructions:
-http://www.underworldproject.org/documentation/HDF5Download.html
-
-#considerations
+##considerations
 account for time series
 plot the data
 
 -- number of rentals by month in time
 select count(*) as rentals,year(start_date),month(start_date) from bike_rentals group by year(start_date),month(start_date);
 
-#rentals per hour
-select count(*) as trips,hour(start_date),sum(trip_duration_seconds)/count(*) as avg_trip_length_seconds from bike_rentals group by hour(start_date);
+##rentals per hour
+	select count(*) as trips,hour(start_date),sum(trip_duration_seconds)/count(*) as avg_trip_length_seconds from bike_rentals group by hour(start_date);
 
+### Create a summary table for bike sharing
 	#summary table
 
 	create table bike_summary
@@ -75,33 +70,33 @@ select count(*) as trips,hour(start_date),sum(trip_duration_seconds)/count(*) as
 select tempi,hum,date(date_recorded),hour_recorded from weather_data r_date group by hour_recorded,date(date_recorded);
 
 ##join
-select count(br.row_id) as trips,tempi,hum,date(date_recorded),hour_recorded from weather_data wd join bike_rentals br on (hour(br.start_date)=wd.hour_recorded and date(br.start_date)=date(wd.date_recorded)) limit 10;
+	select count(br.row_id) as trips,tempi,hum,date(date_recorded),hour_recorded from weather_data wd join bike_rentals br on (hour(br.start_date)=wd.hour_recorded and date(br.start_date)=date(wd.date_recorded)) limit 10;
 
 ##join
-select count(br.row_id) as trips,tempi,hum,date(date_recorded),hour_recorded from weather_data wd join bike_rentals br on (hour(br.start_date)=wd.hour_recorded and date(br.start_date)=date(wd.date_recorded))
-where date(wd.date_recorded)='2013-03-01' limit 10;
+	select count(br.row_id) as trips,tempi,hum,date(date_recorded),hour_recorded from weather_data wd join bike_rentals br on (hour(br.start_date)=wd.hour_recorded and date(br.start_date)=date(wd.date_recorded))
+	where date(wd.date_recorded)='2013-03-01' limit 10;
 
 ##interesting
-select * from bike_summary where trips > 100 order by trips,avg_trip_duration desc limit 20;
+	select * from bike_summary where trips > 100 order by trips,avg_trip_duration desc limit 20;
 
 ##join w/ summary table
-select trips,tempi,hum,date(date_recorded) as date_trip_wthr,hour_recorded
-from weather_data wd
-join bike_summary bs on (trip_hour=hour_recorded and date(trip_date)=date(date_recorded))
-where date(wd.date_recorded)='2013-03-01' limit 10;
+	select trips,tempi,hum,date(date_recorded) as date_trip_wthr,hour_recorded
+	from weather_data wd
+	join bike_summary bs on (trip_hour=hour_recorded and date(trip_date)=date(date_recorded))
+	where date(wd.date_recorded)='2013-03-01' limit 10;
 
 ##join w/ summary table
-select trips,tempi,hum,date(date_recorded) as date_trip_wthr,hour_recorded
-from weather_data wd
-join bike_summary bs on (trip_hour=hour_recorded and date(trip_date)=date(date_recorded))
-order by trips,tempi;
+	select trips,tempi,hum,date(date_recorded) as date_trip_wthr,hour_recorded
+	from weather_data wd
+	join bike_summary bs on (trip_hour=hour_recorded and date(trip_date)=date(date_recorded))
+	order by trips,tempi;
 
 ##interesting
-select * from bike_summary 
-select trips,tempi,hum,date(date_recorded) as date_trip_wthr,hour_recorded
-from weather_data wd
-join bike_summary bs on (trip_hour=hour_recorded and date(trip_date)=date(date_recorded))
- limit 10;
+	select * from bike_summary 
+	select trips,tempi,hum,date(date_recorded) as date_trip_wthr,hour_recorded
+	from weather_data wd
+	join bike_summary bs on (trip_hour=hour_recorded and date(trip_date)=date(date_recorded))
+	 limit 10;
 
 #how to define "weather"
 What constitutes good weather? 
@@ -281,6 +276,15 @@ different models to explain different seasons.
 In reality there are certainly variables that I'm not controlling for, called residual confounding,
 but this approach should be solid enough. 
 
+
+Find some clearly painful weather days:
+	
+	select month(date_recorded),tempi,dewpti,hum
+	from weather_data
+	where tempi-dewpti < 5 and tempi > 75 order by hum;
+
+Let's see if on these days we can find a similar comparison sent where we have much nice weather.
+We'll define that as humidity dropping down to 50%. 
 
 #final approach
 establish patterns
