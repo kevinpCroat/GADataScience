@@ -18,4 +18,6 @@ N-folds CV is a method for validating your model using folds of the data. The mo
 section without learning from the previous section. This is more robust then just using a straight
 test/train setup to improve model generalization.
 
-Hw3 - Naive Bayes Classification
+Hw4 - Logistic Regression
+
+Classification Algorithm for linearly separable classes.
